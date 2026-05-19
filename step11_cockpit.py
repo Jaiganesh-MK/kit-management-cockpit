@@ -886,7 +886,7 @@ def render_command_bar():
     # ── Row 1: meta chips (pure Streamlit columns) ──────────────────
     st.markdown('<div class="cmd-bar-outer">', unsafe_allow_html=True)
 
-    c0, c1, c2, c3, c4, c5, c6, c7 = st.columns([1.2, 1.5, 1.1, 2, 1.5, 1, 1.2, 1.2])
+    c0, c1, c2, c3, c4, c5, c6 = st.columns([1.2, 2, 2.5, 1.5, 1, 1.2, 1.2])
 
     # Serial
     _sn = eq.get("serial_number", "—")
@@ -903,15 +903,8 @@ def render_command_bar():
         f"<span style='font-weight:500'>{eq.get('customer_name','—')}</span></div>",
         unsafe_allow_html=True)
 
-    # Site
-    c2.markdown(
-        f"<div style='background:#F9FAFB;border:0.5px solid #E5E7EB;border-radius:4px;padding:3px 8px;font-size:11px'>"
-        f"<span style='color:#9CA3AF;font-size:10px'>Site&nbsp;</span>"
-        f"<span style='font-weight:500'>{eq.get('site','—')}</span></div>",
-        unsafe_allow_html=True)
-
     # Machine
-    c3.markdown(
+    c2.markdown(
         f"<div style='background:#F9FAFB;border:0.5px solid #E5E7EB;border-radius:4px;padding:3px 8px;font-size:11px'>"
         f"<span style='color:#9CA3AF;font-size:10px'>Machine&nbsp;</span>"
         f"<span style='font-weight:500'>{eq.get('description','—')}</span></div>",
@@ -921,7 +914,7 @@ def render_command_bar():
     last_v = eq.get("last_verified_date", "—")
     stale  = done and dq.get("verification_status") in ("STALE", "CRITICAL")
     lv_color = "#DC2626" if stale else "#374151"
-    c4.markdown(
+    c3.markdown(
         f"<div style='background:#F9FAFB;border:0.5px solid #E5E7EB;border-radius:4px;padding:3px 8px;font-size:11px'>"
         f"<span style='color:#9CA3AF;font-size:10px'>Verified&nbsp;</span>"
         f"<span style='font-weight:600;color:{lv_color}'>{last_v}</span></div>",
@@ -929,18 +922,18 @@ def render_command_bar():
 
     # Status badge
     if done:
-        c5.markdown(chip("Analysis ready", "ai"), unsafe_allow_html=True)
+        c4.markdown(chip("Analysis ready", "ai"), unsafe_allow_html=True)
     else:
-        c5.markdown(chip("No case open", "default"), unsafe_allow_html=True)
+        c4.markdown(chip("No case open", "default"), unsafe_allow_html=True)
 
     # Approval status
     appr_map = {"APPROVED": ("IB approved", "ok"), "REJECTED": ("Rejected", "critical"),
                 "REVIEW": ("In review", "high")}
     if st.session_state.approval_status in appr_map:
         lbl, sty = appr_map[st.session_state.approval_status]
-        c6.markdown(chip(lbl, sty), unsafe_allow_html=True)
+        c5.markdown(chip(lbl, sty), unsafe_allow_html=True)
     elif done:
-        c7.markdown(
+        c6.markdown(
             f"<div style='background:#F3E8FF;border:1px solid #A100FF;border-radius:20px;"
             f"padding:3px 10px;font-size:11px;font-weight:600;color:#460073;"
             f"display:inline-flex;align-items:center;gap:5px'>"
@@ -1609,11 +1602,11 @@ def render_landing():
     cols = st.columns(4, gap="medium")
     for col, (icon, title, desc) in zip(cols, caps):
         col.markdown(f"""<div style="background:#FFFFFF;border:1px solid #E9E9EF;border-radius:12px;
-          padding:24px 20px;min-height:220px;display:flex;flex-direction:column;
-          box-shadow:0 2px 8px rgba(0,0,0,0.05);transition:box-shadow 0.2s">
+          padding:24px 20px;height:240px;display:flex;flex-direction:column;
+          box-shadow:0 2px 8px rgba(0,0,0,0.05);overflow:hidden">
           <div style="font-size:32px;margin-bottom:12px">{icon}</div>
           <div style="font-size:16px;font-weight:700;color:#111827;margin-bottom:10px">{title}</div>
-          <div style="font-size:14px;color:#6B7280;line-height:1.6;flex:1">{desc}</div>
+          <div style="font-size:14px;color:#6B7280;line-height:1.6;flex:1;overflow:hidden">{desc}</div>
         </div>""", unsafe_allow_html=True)
 
 # ============================================================
