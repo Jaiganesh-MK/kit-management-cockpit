@@ -15,7 +15,7 @@ import os
 # ============================================================
 
 # Update this path to where your CSV files are
-DATA_DIR = "./dataset_extended"  # Change this if your CSVs are elsewhere
+DATA_DIR = "./dataset"  # Change this if your CSVs are elsewhere
 
 print("Loading dataset...")
 equipment = pd.read_csv(f"{DATA_DIR}/01_equipment_master.csv", dtype=str).fillna("")
