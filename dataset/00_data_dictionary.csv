@@ -1,0 +1,28 @@
+table,field,type,description,example
+01_equipment_master,serial_number,String,Unique equipment serial number (SN-XXXXX),SN-10001
+01_equipment_master,material_number,String,Equipment type/model identifier per SAP,TBA/21
+01_equipment_master,description,String,Human-readable equipment name,Tetra Brik Aseptic 21
+01_equipment_master,family,String,"Equipment family: Filling, Processing, Downstream",Filling
+01_equipment_master,sub_family,String,Equipment sub-family,Aseptic
+01_equipment_master,customer_id,String,Customer identifier,CUST-001
+01_equipment_master,config_*,String,"Configuration characteristics (volume, cap_type, jaw_system, etc.). May be blank = missing data.",250ml
+01_equipment_master,status,String,Active or Decommissioned,Active
+01_equipment_master,last_verified_date,Date,Last date config was physically verified. Stale = data quality risk.,2023-06-15
+02_kit_master,mstk_number,String,"Material Stockable number - the orderable, pre-configured kit variant",3495770-0101
+02_kit_master,mcon_number,String,Material Configurable number - the umbrella parent kit,3495770-0100
+02_kit_master,rk_type,String,"Kit sub-type: MK_Safety, MK_Corrective, MK_OnDemand, UK_Replacement, UK_Improvement, VCK",MK_Safety
+02_kit_master,applicable_material_number,String,Equipment material number this MSTK is configured for,TBA/21
+02_kit_master,config_match_key/value,String,Specific config value this MSTK requires. ANY = matches all configs of that material.,volume / 250ml
+02_kit_master,implementation_deadline,Date,Hard deadline for mandatory installation. Blank = no deadline.,2026-06-30
+02_kit_master,included_in_mu,Boolean,Whether kit is bundled inside a Maintenance Unit (avoid double-ordering),False
+02_kit_master,vck_affected,Boolean,Whether kit is related to or affected by Volume Conversion,True
+03_kit_dependencies,dependency_type,String,"PREREQUISITE (must be installed first), INTERFERES_WITH (mutually exclusive), GROUP_WITH (batch together)",PREREQUISITE
+03_kit_dependencies,mcon_number,String,The kit that has the dependency,3495880-0100
+03_kit_dependencies,depends_on_mcon,String,The kit that is depended upon or conflicts with,3495770-0200
+04_installation_history,installation_status,String,"COMPLETED, PARTIALLY_INSTALLED, ORDERED_NOT_CONFIRMED, STATUS_UNKNOWN",COMPLETED
+04_installation_history,ib_updated,String,"Whether installed base was updated: Yes, Partial, No",Yes
+05_service_orders,order_type,String,Service order type - indirect evidence of kit activity,Kit Installation
+05_service_orders,technician_notes,String,Free-text notes - may contain evidence of unreported kit installations,Installed kit per TB. Validated OK.
+05_service_orders,parts_referenced,String,MSTK numbers referenced in service order. May not match installation records.,3495770-0101
+06_test_scenarios,category,String,"CLEAN (baseline), DEGRADED (data quality issues), EDGE_CASE (complex logic)",DEGRADED
+06_test_scenarios,expected_difficulty,String,"Easy (both systems solve), Medium (AI advantage), Hard (AI required)",Hard

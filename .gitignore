@@ -1,0 +1,14 @@
+# Secrets — never commit these
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+
+# Local editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

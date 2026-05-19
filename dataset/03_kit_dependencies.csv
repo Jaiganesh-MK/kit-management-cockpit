@@ -1,0 +1,12 @@
+mcon_number,dependency_type,depends_on_mcon,notes
+3495880-0100,PREREQUISITE,3495770-0200,Drive Belt fix requires Jaw Safety Retrofit first
+3496200-0100,PREREQUISITE,3495880-0100,Speed Enhancement requires Drive Belt correction
+3496100-0100,PREREQUISITE,3495770-0300,HMI Upgrade requires Aseptic Chamber Seal for sensor compatibility
+3496200-0200,PREREQUISITE,3495880-0200,Energy module requires updated CIP valve actuators
+3496400-0200,PREREQUISITE,3496400-0100,Separator overhaul requires HX gaskets replaced first for CIP integrity
+3496500-0100,PREREQUISITE,3496100-0200,Cap applicator upgrade needs new servo motors installed
+3496300-0100,INTERFERES_WITH,3496200-0100,Volume conversion to 1000ml incompatible with speed enhancement for 250ml
+3496300-0200,INTERFERES_WITH,3496300-0100,Cannot apply two volume conversions simultaneously
+3496500-0100,INTERFERES_WITH,3495770-0100,Cap upgrade to LightCap30 incompatible with TS Transformer safety kit designed for HeliCap
+3495770-0200,GROUP_WITH,3495880-0100,Jaw safety and drive belt should be done in same service visit
+3496400-0100,GROUP_WITH,3495880-0200,PHE gaskets and CIP valve fix can share downtime window

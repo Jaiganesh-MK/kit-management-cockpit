@@ -1,0 +1,28 @@
+scenario_id,category,equipment_serial,description,expected_difficulty,notes
+SC-01,CLEAN,SN-10001,"Complete config, full history - standard matching",Easy,Baseline: rule-based and AI should both get this right
+SC-02,CLEAN,SN-10006,Processing equipment with full records,Easy,Baseline for processing equipment family
+SC-03,CLEAN,SN-10011,Equipment with simple prerequisite chain,Easy,Test basic dependency resolution
+SC-04,CLEAN,SN-10016,Downstream equipment - limited kit portfolio,Easy,"Narrow match space, should be straightforward"
+SC-05,CLEAN,SN-10021,"Multiple applicable kits, no conflicts",Easy,Test completeness of recommendation set
+SC-06,DEGRADED,SN-10007,Missing configuration field - cannot resolve MSTK variant,Medium,Rule-based fails; AI should infer from service history
+SC-07,DEGRADED,SN-10017,Stale verification date - config may have drifted,Medium,AI should flag low confidence and check service history for changes
+SC-08,DEGRADED,SN-10018,Wrong material number from migration error,Hard,Rule-based recommends wrong MSTK; AI should detect inconsistency
+SC-09,DEGRADED,SN-10032,Undocumented config change - VCK applied but not recorded,Hard,AI should infer volume change from service order patterns
+SC-10,DEGRADED,SN-10034,Installation status unknown for prerequisite kit,Medium,AI should use service order evidence to infer installation status
+SC-11,DEGRADED,SN-10040,Orphan service orders referencing unknown kits,Medium,AI should reconcile across tables to detect data inconsistency
+SC-12,DEGRADED,SN-10040,Multiple conflicting config entries across tables,Hard,AI should identify most likely true configuration
+SC-13,EDGE_CASE,SN-10031,Multi-level prerequisite chain with gap in middle,Hard,Kit C requires B requires A; B status unknown. AI must reason through chain.
+SC-14,EDGE_CASE,SN-10036,VCK-affected equipment with interfering kit already installed,Hard,Volume conversion conflicts with existing upgrade. AI must detect and flag.
+SC-15,EDGE_CASE,SN-10041,Kit included in MU - avoid double ordering,Medium,Kit is part of maintenance unit. AI should check MU status before recommending.
+SC-16,EDGE_CASE,SN-10043,Implementation deadline approaching on critical machine,Medium,Safety kit with hard deadline on critical/parental machine. AI should prioritize.
+SC-17,EDGE_CASE,SN-10003,Software-only kit on equipment with hardware prerequisite,Medium,Software kit depends on hardware kit that may not be installed.
+NEW_SC_400,DEGRADED,NEW_SN_1014,Multiple conflicting config entries across tables,Hard,AI should identify most likely true configuration
+NEW_SC_401,CLEAN,SN-10016,Stale verification date with partial installation evidence in service logs,Easy,"Narrow match space, should be straightforward"
+NEW_SC_402,CLEAN,NEW_SN_1000,Stale verification date with partial installation evidence in service logs,Easy,Baseline: rule-based and AI should both get this right
+NEW_SC_403,CLEAN,SN-10016,Downstream equipment - limited kit portfolio,Easy,"Narrow match space, should be straightforward"
+NEW_SC_404,CLEAN,SN-10021,New equipment with missing speed config and ambiguous installation history,Easy,Test completeness of recommendation set
+NEW_SC_405,EDGE_CASE,NEW_SN_1003,Implementation deadline approaching on critical machine,Medium,Safety kit with hard deadline on critical/parental machine. AI should prioritize.
+NEW_SC_406,CLEAN,NEW_SN_1011,Processing equipment with full records,Easy,Baseline for processing equipment family
+NEW_SC_407,EDGE_CASE,SN-10041,Prerequisite chain uncertain due to missing middle-step confirmation,Medium,Kit is part of maintenance unit. AI should check MU status before recommending.
+NEW_SC_408,DEGRADED,NEW_SN_1013,Conflicting service note suggests VCK applied but master data unchanged,Hard,AI should infer volume change from service order patterns
+NEW_SC_409,EDGE_CASE,NEW_SN_1012,Kit included in MU - avoid double ordering,Medium,Kit is part of maintenance unit. AI should check MU status before recommending.
