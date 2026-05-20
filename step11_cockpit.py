@@ -928,7 +928,7 @@ def render_command_bar():
     # ── Row 1: meta chips (pure Streamlit columns) ──────────────────
     st.markdown('<div class="cmd-bar-outer">', unsafe_allow_html=True)
 
-    c0, c1, c2, c3, c4, c5, c6, c7 = st.columns([1.2, 2, 2.5, 1.5, 1, 1.5, 1.2, 1.2])
+    c0, c1, c2, c3, c4, c5, c6, c7 = st.columns([1.2, 2, 2.5, 1.4, 1, 1.5, 1.1, 1.6])
 
     # Serial
     _sn = eq.get("serial_number", "—")
@@ -991,10 +991,10 @@ def render_command_bar():
         c7.markdown(
             f"<div style='background:#F3E8FF;border:1px solid #A100FF;border-radius:20px;"
             f"padding:3px 10px;font-size:11px;font-weight:600;color:#460073;"
-            f"display:inline-flex;align-items:center;gap:5px'>"
+            f"display:inline-flex;align-items:center;gap:4px;white-space:nowrap'>"
             f"<span style='width:7px;height:7px;border-radius:50%;"
             f"background:{'#16A34A' if conf_val >= 0.75 else '#F59E0B' if conf_val >= 0.5 else '#EF4444'};"
-            f"display:inline-block'></span>Confidence {conf_val:.0%}</div>",
+            f"display:inline-block;flex-shrink:0'></span>{conf_val:.0%} conf</div>",
             unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
