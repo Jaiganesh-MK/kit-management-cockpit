@@ -947,77 +947,90 @@ def render_command_bar():
               if k.get("action") in ("INSTALL", "ORDER")), None) or 0
     )
 
-    # ── Row 1: meta chips (pure Streamlit columns) ──────────────────
+    # ── Row 1: meta chips — 7 equal cards via CSS grid ─────────────
     st.markdown('<div class="cmd-bar-outer">', unsafe_allow_html=True)
 
-    c0, c1, c2, c3, c4, c5, c6, c7 = st.columns([1.2, 2, 2.5, 1.4, 1, 1.5, 1.1, 1.6])
+    # Build chip values
+    _sn      = eq.get("serial_number", "—")
+    _cust    = eq.get("customer_name", "—")
+    _machine = eq.get("description", "—")
+    last_v   = eq.get("last_verified_date", "—")
+    stale    = done and dq.get("verification_status") in ("STALE", "CRITICAL")
+    lv_color = "#DC2626" if stale else "#111827"
 
-    # Serial
-    _sn = eq.get("serial_number", "—")
-    c0.markdown(
-        f'<span style="font-family:JetBrains Mono,monospace;font-size:13px;font-weight:600;'
-        f'color:#460073;background:#F3E8FF;border:1.5px solid #A100FF;'
-        f'border-radius:5px;padding:4px 9px">{_sn}</span>',
-        unsafe_allow_html=True)
+    status_label = "Analysis ready" if done else "No case open"
+    status_bg    = "#F3E8FF" if done else "#F9FAFB"
+    status_color = "#460073" if done else "#6B7280"
+    status_border= "#A100FF" if done else "#E5E7EB"
 
-    # Customer
-    c1.markdown(
-        f"<div style='background:#F9FAFB;border:0.5px solid #E5E7EB;border-radius:4px;padding:3px 8px;font-size:11px'>"
-        f"<span style='color:#9CA3AF;font-size:10px'>Customer&nbsp;</span>"
-        f"<span style='font-weight:500'>{eq.get('customer_name','—')}</span></div>",
-        unsafe_allow_html=True)
-
-    # Machine
-    c2.markdown(
-        f"<div style='background:#F9FAFB;border:0.5px solid #E5E7EB;border-radius:4px;padding:3px 8px;font-size:11px'>"
-        f"<span style='color:#9CA3AF;font-size:10px'>Machine&nbsp;</span>"
-        f"<span style='font-weight:500'>{eq.get('description','—')}</span></div>",
-        unsafe_allow_html=True)
-
-    # Last verified
-    last_v = eq.get("last_verified_date", "—")
-    stale  = done and dq.get("verification_status") in ("STALE", "CRITICAL")
-    lv_color = "#DC2626" if stale else "#374151"
-    c3.markdown(
-        f"<div style='background:#F9FAFB;border:0.5px solid #E5E7EB;border-radius:4px;padding:3px 8px;font-size:11px'>"
-        f"<span style='color:#9CA3AF;font-size:10px'>Verified&nbsp;</span>"
-        f"<span style='font-weight:600;color:{lv_color}'>{last_v}</span></div>",
-        unsafe_allow_html=True)
-
-    # Status badge + RAG indicator
-    if done:
-        c4.markdown(chip("Analysis ready", "ai"), unsafe_allow_html=True)
+    rag_stats = get_index_stats() if RAG_AVAILABLE else {"ready": False}
+    if rag_stats.get("ready"):
+        kb_label  = f"📚 {rag_stats['files']} docs · {rag_stats['chunks']} chunks"
+        kb_bg     = "#D1FAE5"; kb_color = "#065F46"; kb_border = "#6EE7B7"
     else:
-        c4.markdown(chip("No case open", "default"), unsafe_allow_html=True)
+        kb_label  = "📚 KB not loaded"
+        kb_bg     = "#F9FAFB"; kb_color = "#6B7280"; kb_border = "#E5E7EB"
 
-    # RAG knowledge base status chip
-    if RAG_AVAILABLE:
-        rag_stats = get_index_stats()
-        if rag_stats["ready"]:
-            c5.markdown(
-                f"<div style='background:#D1FAE5;border:1px solid #6EE7B7;border-radius:12px;"
-                f"padding:3px 10px;font-size:11px;font-weight:600;color:#065F46;"
-                f"display:inline-flex;align-items:center;gap:5px'>"
-                f"📚 KB: {rag_stats['files']} docs · {rag_stats['chunks']} chunks</div>",
-                unsafe_allow_html=True)
-        else:
-            c5.markdown(chip("KB: no docs", "default"), unsafe_allow_html=True)
+    conf_color  = "#16A34A" if conf_val >= 0.75 else "#F59E0B" if conf_val >= 0.5 else "#EF4444"
+    conf_label  = f"{conf_val:.0%} conf" if done else "—"
+    conf_bg     = "#F3E8FF" if done else "#F9FAFB"
+    conf_border = "#A100FF" if done else "#E5E7EB"
+    conf_dot    = f"<span style='width:8px;height:8px;border-radius:50%;background:{conf_color};display:inline-block;flex-shrink:0'></span>" if done else ""
 
-    # Approval status
-    appr_map = {"APPROVED": ("IB approved", "ok"), "REJECTED": ("Rejected", "critical"),
-                "REVIEW": ("In review", "high")}
-    if st.session_state.approval_status in appr_map:
-        lbl, sty = appr_map[st.session_state.approval_status]
-        c6.markdown(chip(lbl, sty), unsafe_allow_html=True)
-    elif done:
-        c7.markdown(
-            f"<div style='background:#F3E8FF;border:1px solid #A100FF;border-radius:20px;"
-            f"padding:3px 10px;font-size:11px;font-weight:600;color:#460073;"
-            f"display:inline-flex;align-items:center;gap:4px;white-space:nowrap'>"
-            f"<span style='width:7px;height:7px;border-radius:50%;"
-            f"background:{'#16A34A' if conf_val >= 0.75 else '#F59E0B' if conf_val >= 0.5 else '#EF4444'};"
-            f"display:inline-block;flex-shrink:0'></span>{conf_val:.0%} conf</div>",
-            unsafe_allow_html=True)
+    # One shared card style — identical for all 7
+    card = (
+        "background:{bg};border:1px solid {border};border-radius:6px;"
+        "padding:6px 10px;display:flex;flex-direction:column;justify-content:center;"
+        "min-width:0;overflow:hidden;height:44px"
+    )
+    lbl  = "font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#9CA3AF;white-space:nowrap"
+    val  = "font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
+
+    sn_card = card.format(bg="#F3E8FF", border="#A100FF")
+
+    render_html(f"""
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;padding:8px 16px 0">
+
+      <div style="{sn_card}">
+        <div style="{lbl};color:#7500C0">Serial</div>
+        <div style="{val};color:#460073;font-family:JetBrains Mono,monospace">{_sn}</div>
+      </div>
+
+      <div style="{card.format(bg='#F9FAFB', border='#E5E7EB')}">
+        <div style="{lbl}">Customer</div>
+        <div style="{val};color:#111827">{_cust}</div>
+      </div>
+
+      <div style="{card.format(bg='#F9FAFB', border='#E5E7EB')}">
+        <div style="{lbl}">Machine</div>
+        <div style="{val};color:#111827">{_machine}</div>
+      </div>
+
+      <div style="{card.format(bg='#F9FAFB', border='#E5E7EB')}">
+        <div style="{lbl}">Verified</div>
+        <div style="{val};color:{lv_color}">{last_v}</div>
+      </div>
+
+      <div style="{card.format(bg=status_bg, border=status_border)}">
+        <div style="{lbl};color:{status_color}">Status</div>
+        <div style="{val};color:{status_color}">{status_label}</div>
+      </div>
+
+      <div style="{card.format(bg=kb_bg, border=kb_border)}">
+        <div style="{lbl};color:{kb_color}">Knowledge base</div>
+        <div style="{val};color:{kb_color};font-size:11px">{kb_label}</div>
+      </div>
+
+      <div style="{card.format(bg=conf_bg, border=conf_border)}">
+        <div style="{lbl};color:{conf_color if done else '#9CA3AF'}">Confidence</div>
+        <div style="display:flex;align-items:center;gap:5px">
+          {conf_dot}
+          <span style="{val};color:{conf_color if done else '#6B7280'}">{conf_label}</span>
+        </div>
+      </div>
+
+    </div>
+    """)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
