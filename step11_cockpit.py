@@ -1557,9 +1557,9 @@ def render_approval_section(ctx, a1, a2):
             </div>
             {cf_rows}
           </div>
-          <div style="background:#F9FAFB;border-radius:6px;padding:10px;font-size:11px;color:#374151;line-height:1.55">
-            <div style="font-weight:600;color:#111827;margin-bottom:4px">Supporting evidence</div>
-            {a2.get("exec_summary","Analysis complete. Review the before/after fields and approve to queue the IB update for SAP execution.")[:300]}
+          <div style="background:#F9FAFB;border-radius:6px;padding:10px;font-size:12px;color:#374151;line-height:1.6;overflow-wrap:break-word">
+            <div style="font-weight:600;color:#111827;margin-bottom:6px">Supporting evidence</div>
+            {a2.get("exec_summary","Analysis complete. Review the before/after fields and approve to queue the IB update for SAP execution.").replace("<","&lt;").replace(">","&gt;")}
           </div>
         </div>
       </div>
