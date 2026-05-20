@@ -867,9 +867,10 @@ def build_export_report(ctx, a1, a2):
 
 @st.dialog("💬 Ask AI", width="large")
 def chat_popup(ctx, a1, a2):
-    """Floating chatbot dialog — triggered by Ask AI button."""
+    """Floating chatbot dialog — no st.rerun() inside so dialog never closes."""
     eq = ctx["equipment"]
 
+    # ── Header ──────────────────────────────────────────────────────
     st.markdown(
         f"<div style='background:linear-gradient(135deg,#F3E8FF,#FAF3FF);"
         f"border-radius:8px;padding:10px 14px;margin-bottom:12px'>"
@@ -881,7 +882,16 @@ def chat_popup(ctx, a1, a2):
         unsafe_allow_html=True,
     )
 
-    # Suggestion chips when empty
+    def _send(user_text: str):
+        """Append user message, call LLM, append reply — all in one pass."""
+        st.session_state.chat_messages.append({"role": "user", "content": user_text})
+        sys_p = build_chat_system_prompt(ctx, a1, a2)
+        msgs  = [{"role": "system", "content": sys_p}] + st.session_state.chat_messages
+        with st.spinner("Thinking…"):
+            reply = call_llm_chat(msgs)
+        st.session_state.chat_messages.append({"role": "assistant", "content": reply})
+
+    # ── Suggestion chips (shown only when no history yet) ────────────
     if not st.session_state.chat_messages:
         suggestions = [
             "What discrepancies were found?",
@@ -893,43 +903,38 @@ def chat_popup(ctx, a1, a2):
         ]
         st.markdown(
             "<div style='font-size:11px;font-weight:600;color:#9CA3AF;"
-            "text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px'>Suggested questions</div>",
+            "text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px'>"
+            "Suggested questions</div>",
             unsafe_allow_html=True,
         )
         s_cols = st.columns(2)
         for i, s in enumerate(suggestions):
+            # Use a unique key; clicking adds messages and the dialog re-renders
             if s_cols[i % 2].button(s, key=f"popup_sugg_{i}", use_container_width=True):
-                st.session_state.chat_messages.append({"role": "user", "content": s})
-                sys_p = build_chat_system_prompt(ctx, a1, a2)
-                msgs  = [{"role": "system", "content": sys_p}] + st.session_state.chat_messages
-                with st.spinner("Thinking…"):
-                    reply = call_llm_chat(msgs)
-                st.session_state.chat_messages.append({"role": "assistant", "content": reply})
-                st.rerun()
+                _send(s)
+                # No st.rerun() — dialog naturally re-renders after button click
 
-    # Message history
+    # ── Message history ───────────────────────────────────────────────
     for msg in st.session_state.chat_messages:
         with st.chat_message(msg["role"], avatar="🧑" if msg["role"] == "user" else "🤖"):
             st.markdown(msg["content"])
 
+    # ── Clear button ──────────────────────────────────────────────────
     if st.session_state.chat_messages:
-        if st.button("🗑️ Clear", key="popup_clear_chat"):
+        if st.button("🗑️ Clear conversation", key="popup_clear_chat"):
             st.session_state.chat_messages = []
-            st.rerun()
+            # No st.rerun() — dialog re-renders cleanly
 
-    # Chat input inside dialog
-    prompt = st.chat_input("Ask about this equipment…", key="popup_chat_input")
+    # ── Chat input ────────────────────────────────────────────────────
+    # st.chat_input always sits at the bottom of the dialog.
+    # We render history above it so the flow is: history → input → new messages appear above input.
+    prompt = st.chat_input("Type your question here…", key="popup_chat_input")
     if prompt:
-        st.session_state.chat_messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user", avatar="🧑"):
-            st.markdown(prompt)
-        with st.chat_message("assistant", avatar="🤖"):
-            with st.spinner("Thinking…"):
-                sys_p = build_chat_system_prompt(ctx, a1, a2)
-                msgs  = [{"role": "system", "content": sys_p}] + st.session_state.chat_messages
-                reply = call_llm_chat(msgs)
-            st.markdown(reply)
-        st.session_state.chat_messages.append({"role": "assistant", "content": reply})
+        _send(prompt)
+        # No st.rerun() — Streamlit re-renders the dialog after chat_input submission,
+        # so the new messages appear in the history block on the next render pass.
+
+
 
 
 # ============================================================
