@@ -396,16 +396,38 @@ CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
 .stApp { font-family:'Inter',-apple-system,sans-serif; background:#F1F0F4; }
-.stApp > header { display:none!important; }
-.stMainBlockContainer,[data-testid="stMainBlockContainer"],
-.block-container,[data-testid="block-container"] {
-    padding-top:0!important; padding-left:0!important;
-    padding-right:0!important; padding-bottom:0!important;
+
+/* ---- Hide Streamlit chrome completely ---- */
+.stApp > header                                { display:none!important; }
+header[data-testid="stHeader"]                 { display:none!important; }
+[data-testid="stHeader"]                       { display:none!important; }
+[data-testid="stToolbar"]                      { display:none!important; }
+[data-testid="stDecoration"]                   { display:none!important; }
+[data-testid="stDeployButton"]                 { display:none!important; }
+.stDeployButton                                { display:none!important; }
+#MainMenu                                      { display:none!important; }
+footer                                         { display:none!important; }
+.viewerBadge_container__r5tak                  { display:none!important; }
+.styles_viewerBadge__CvC9N                     { display:none!important; }
+
+/* ---- Remove ALL top padding so command bar is flush to viewport ---- */
+.stApp > div:first-child                       { padding-top:0!important; }
+.stMainBlockContainer,
+[data-testid="stMainBlockContainer"],
+.block-container,
+[data-testid="block-container"] {
+    padding-top:3.5rem!important;
+    padding-left:0!important;
+    padding-right:0!important;
+    padding-bottom:0!important;
     max-width:100%!important;
 }
-section.main > div { padding-top:0!important; }
-[data-testid="stSidebar"],[data-testid="stSidebarCollapseButton"],
-[data-testid="collapsedControl"] { display:none!important; }
+section.main > div                             { padding-top:0!important; }
+
+/* ---- Hide sidebar ---- */
+[data-testid="stSidebar"],
+[data-testid="stSidebarCollapseButton"],
+[data-testid="collapsedControl"]               { display:none!important; }
 
 /* ---- COMMAND BAR ---- */
 .cmd-bar {
