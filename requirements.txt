@@ -2,3 +2,5 @@ streamlit>=1.33.0
 pandas
 requests
 urllib3
+chromadb>=0.4.0
+sentence-transformers>=2.2.0

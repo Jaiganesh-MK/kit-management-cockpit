@@ -18,6 +18,21 @@ from step1_data_layer import (
     check_kit_dependencies, search_service_orders,
 )
 
+# ── RAG layer (optional — gracefully disabled if deps not installed) ──────────
+try:
+    from step2_rag_layer import (
+        build_index, retrieve_for_equipment, retrieve_for_kit,
+        retrieve_raw, get_index_stats,
+    )
+    RAG_AVAILABLE = True
+except ImportError:
+    RAG_AVAILABLE = False
+    def build_index(**kwargs):         return {"files": 0, "chunks_added": 0, "files_skipped": 0}
+    def retrieve_for_equipment(**kw):  return ""
+    def retrieve_for_kit(**kw):        return ""
+    def retrieve_raw(**kw):            return ""
+    def get_index_stats():             return {"files": 0, "chunks": 0, "ready": False}
+
 # ============================================================
 # CONFIG  —  add your OpenRouter API keys here
 # ============================================================
@@ -226,6 +241,21 @@ def build_agent1_prompt(ctx):
         if s['technician_notes']: p += f" | Notes: {s['technician_notes']}"
         if s['parts_referenced']: p += f" | Parts: {s['parts_referenced']}"
         p += "\n"
+
+    # ── RAG: inject relevant knowledge base chunks ─────────────────────────
+    if RAG_AVAILABLE:
+        kit_types    = list(set(k.get("rk_type","") for k in ctx["applicable_kits"] if k.get("rk_type")))
+        disc_desc    = []  # no discrepancies yet (Agent 1 hasn't run) — use kit types as signals
+        rag_chunks   = retrieve_for_equipment(
+            material_number=ctx["equipment"].get("material_number",""),
+            kit_types=kit_types,
+        )
+        if rag_chunks:
+            p += f"\n\nKNOWLEDGE BASE (retrieved — use to improve confidence and reasoning):\n"
+            p += "=" * 60 + "\n"
+            p += rag_chunks
+            p += "\n" + "=" * 60 + "\n"
+
     return p
 
 
@@ -252,6 +282,18 @@ Kit decisions:
 Executive summary: {a2.get('exec_summary','')}
 Total cost: EUR {ap.get('cost_summary',{}).get('total_kit_cost_eur',0):,.0f} | Downtime: {ap.get('cost_summary',{}).get('total_downtime_hrs',0)}h
 ANSWER GUIDELINES: Be concise (2-5 sentences). Reference specific MSTKs and service order IDs. Don't fabricate data."""
+
+
+# ── Build RAG index on startup (once per session) ────────────────────────────
+@st.cache_resource(show_spinner=False)
+def _build_rag_index():
+    """Build/update the knowledge base index once per Streamlit session."""
+    if not RAG_AVAILABLE:
+        return None
+    return build_index()
+
+_rag_build_result = _build_rag_index()
+
 
 # ============================================================
 # UI HELPERS
@@ -886,7 +928,7 @@ def render_command_bar():
     # ── Row 1: meta chips (pure Streamlit columns) ──────────────────
     st.markdown('<div class="cmd-bar-outer">', unsafe_allow_html=True)
 
-    c0, c1, c2, c3, c4, c5, c6 = st.columns([1.2, 2, 2.5, 1.5, 1, 1.2, 1.2])
+    c0, c1, c2, c3, c4, c5, c6, c7 = st.columns([1.2, 2, 2.5, 1.5, 1, 1.5, 1.2, 1.2])
 
     # Serial
     _sn = eq.get("serial_number", "—")
@@ -920,20 +962,33 @@ def render_command_bar():
         f"<span style='font-weight:600;color:{lv_color}'>{last_v}</span></div>",
         unsafe_allow_html=True)
 
-    # Status badge
+    # Status badge + RAG indicator
     if done:
         c4.markdown(chip("Analysis ready", "ai"), unsafe_allow_html=True)
     else:
         c4.markdown(chip("No case open", "default"), unsafe_allow_html=True)
+
+    # RAG knowledge base status chip
+    if RAG_AVAILABLE:
+        rag_stats = get_index_stats()
+        if rag_stats["ready"]:
+            c5.markdown(
+                f"<div style='background:#D1FAE5;border:1px solid #6EE7B7;border-radius:12px;"
+                f"padding:3px 10px;font-size:11px;font-weight:600;color:#065F46;"
+                f"display:inline-flex;align-items:center;gap:5px'>"
+                f"📚 KB: {rag_stats['files']} docs · {rag_stats['chunks']} chunks</div>",
+                unsafe_allow_html=True)
+        else:
+            c5.markdown(chip("KB: no docs", "default"), unsafe_allow_html=True)
 
     # Approval status
     appr_map = {"APPROVED": ("IB approved", "ok"), "REJECTED": ("Rejected", "critical"),
                 "REVIEW": ("In review", "high")}
     if st.session_state.approval_status in appr_map:
         lbl, sty = appr_map[st.session_state.approval_status]
-        c5.markdown(chip(lbl, sty), unsafe_allow_html=True)
+        c6.markdown(chip(lbl, sty), unsafe_allow_html=True)
     elif done:
-        c6.markdown(
+        c7.markdown(
             f"<div style='background:#F3E8FF;border:1px solid #A100FF;border-radius:20px;"
             f"padding:3px 10px;font-size:11px;font-weight:600;color:#460073;"
             f"display:inline-flex;align-items:center;gap:5px'>"
